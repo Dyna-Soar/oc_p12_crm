@@ -14,6 +14,15 @@ class User(AbstractUser):
         return f'{self.email}'
 
 
+class Prospect(models.Model):
+    id = models.AutoField(primary_key=True)
+    company_name = models.CharField(max_length=50)
+    email = models.EmailField(max_length=50)
+    phone = models.CharField(max_length=15)
+    # Add a custom Choice field for interest_level
+    interest_level = models.CharField(blank=True)
+
+
 class SalesEmployee(models.Model):
     id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=30)
@@ -22,25 +31,6 @@ class SalesEmployee(models.Model):
     phone = models.CharField(max_length=15)
     date_created = models.DateTimeField(auto_now_add=True)
     prospects = models.ManyToManyField(Prospect, blank=True)
-
-
-class SupportEmployee(models.Model):
-    id = models.AutoField(primary_key=True)
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
-    email = models.EmailField(max_length=50)
-    phone = models.CharField(max_length=15)
-    date_created = models.DateTimeField(auto_now_add=True)
-    events = models.ManyToManyField(Event, blank=True)
-
-
-class Prospect(models.Model):
-    id = models.AutoField(primary_key=True)
-    company_name = models.CharField(max_length=50)
-    email = models.EmailField(max_length=50)
-    phone = models.CharField(max_length=15)
-    # Add a custom Choice field for interest_level
-    interest_level = models.CharField(blank=True)
 
 
 class Client(models.Model):
@@ -58,7 +48,6 @@ class Client(models.Model):
 class Contract(models.Model):
     id = models.AutoField(primary_key=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
     sales_employee = models.ForeignKey(SalesEmployee, on_delete=models.PROTECT)
     date_signed = models.DateField()
     price = models.IntegerField()
@@ -67,7 +56,18 @@ class Contract(models.Model):
 
 class Event(models.Model):
     id = models.AutoField(primary_key=True)
+    contract = models.ForeignKey(Contract, on_delete=models.CASCADE)
     date_start = models.DateTimeField()
     date_end = models.DateTimeField()
     location = models.CharField()
     comments = models.TextField()
+
+
+class SupportEmployee(models.Model):
+    id = models.AutoField(primary_key=True)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+    email = models.EmailField(max_length=50)
+    phone = models.CharField(max_length=15)
+    date_created = models.DateTimeField(auto_now_add=True)
+    events = models.ManyToManyField(Event, blank=True)
