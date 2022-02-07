@@ -12,13 +12,13 @@ class UserSerializer(ModelSerializer):
 class SalesEmployeeSerializer(ModelSerializer):
     class Meta:
         model = SalesEmployee
-        fields = ["id", "first_name", "last_name", "email", "password"]
+        fields = ["id", "first_name", "last_name", "email", "password", "phone"]
 
 
 class SupportEmployeeSerializer(ModelSerializer):
     class Meta:
         model = SupportEmployee
-        fields = ["id", "first_name", "last_name", "email", "password"]
+        fields = ["id", "first_name", "last_name", "email", "password", "phone"]
 
 
 class ProspectSerializer(ModelSerializer):
@@ -30,16 +30,16 @@ class ProspectSerializer(ModelSerializer):
 class ClientSerializer(ModelSerializer):
     class Meta:
         model = Client
-        fields = ["id", "first_name", "last_name", "email"]
+        fields = ["id", "first_name", "last_name", "email", "phone", "company_name", "sales_contact"]
 
 
 class ContractSerializer(ModelSerializer):
     class Meta:
         model = Contract
-        fields = ["id"]
+        fields = ["id", "client", "event", "date_signed", "price"]
 
 
 class EventSerializer(ModelSerializer):
     class Meta:
         model = Event
-        fields = ["id"]
+        fields = ["id", "date_start", "date_end", "location", "comment"]
