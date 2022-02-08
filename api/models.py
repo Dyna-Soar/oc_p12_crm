@@ -11,7 +11,11 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
 
     def __str__(self):
-        return f'{self.email}'
+        return f'{self.username}'
+
+
+class Manager(models.Model):
+    user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
 
 
 class Prospect(models.Model):
@@ -20,16 +24,12 @@ class Prospect(models.Model):
     email = models.EmailField(max_length=50)
     phone = models.CharField(max_length=15)
     # Add a custom Choice field for interest_level
-    interest_level = models.CharField(blank=True)
+    interest_level = models.CharField(max_length=30, blank=True)
 
 
 class SalesEmployee(models.Model):
-    id = models.AutoField(primary_key=True)
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
-    email = models.EmailField(max_length=50)
+    user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
     phone = models.CharField(max_length=15)
-    date_created = models.DateTimeField(auto_now_add=True)
     prospects = models.ManyToManyField(Prospect, blank=True)
 
 
@@ -51,7 +51,7 @@ class Contract(models.Model):
     sales_employee = models.ForeignKey(SalesEmployee, on_delete=models.PROTECT)
     date_signed = models.DateField()
     price = models.IntegerField()
-    pdf = models.FileField(upload_to='contracts_files/')
+    pdf = models.FileField(upload_to='contracts_files/', blank=True)
 
 
 class Event(models.Model):
@@ -59,15 +59,11 @@ class Event(models.Model):
     contract = models.ForeignKey(Contract, on_delete=models.CASCADE)
     date_start = models.DateTimeField()
     date_end = models.DateTimeField()
-    location = models.CharField()
-    comments = models.TextField()
+    location = models.CharField(max_length=200)
+    comments = models.TextField(max_length=300, blank=True)
 
 
 class SupportEmployee(models.Model):
-    id = models.AutoField(primary_key=True)
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
-    email = models.EmailField(max_length=50)
+    user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
     phone = models.CharField(max_length=15)
-    date_created = models.DateTimeField(auto_now_add=True)
     events = models.ManyToManyField(Event, blank=True)
