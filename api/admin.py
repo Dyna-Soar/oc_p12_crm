@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, SalesEmployee, SupportEmployee, Prospect, Client, Contract, Event
+from .models import User, SalesEmployee, SupportEmployee, Prospect, Client, Contract, Event, Manager
 
 # Register your models here.
 
 admin.site.register(User, UserAdmin)
+admin.site.register(Manager)
 admin.site.register(SalesEmployee)
 admin.site.register(SupportEmployee)
 admin.site.register(Prospect)
