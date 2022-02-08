@@ -1,24 +1,36 @@
 from rest_framework.serializers import ModelSerializer
 
-from .models import User, SalesEmployee, SupportEmployee, Prospect, Client, Contract, Event
+from .models import User, Manager, SalesEmployee, SupportEmployee, Prospect, Client, Contract, Event
 
 
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "first_name", "last_name", "email", "password"]
+        fields = ["id", "username", "first_name", "last_name", "email", "password"]
+
+
+class ManagerSerializer(ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = Manager
+        fields = ["user", "phone"]
 
 
 class SalesEmployeeSerializer(ModelSerializer):
+    user = UserSerializer()
+
     class Meta:
         model = SalesEmployee
-        fields = ["id", "first_name", "last_name", "email", "password", "phone"]
+        fields = ["user", "phone", "prospects"]
 
 
 class SupportEmployeeSerializer(ModelSerializer):
+    user = UserSerializer()
+
     class Meta:
         model = SupportEmployee
-        fields = ["id", "first_name", "last_name", "email", "password", "phone"]
+        fields = ["user", "phone"]
 
 
 class ProspectSerializer(ModelSerializer):
