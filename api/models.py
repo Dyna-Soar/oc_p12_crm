@@ -16,6 +16,7 @@ class User(AbstractUser):
 
 class Manager(models.Model):
     user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
+    phone = models.CharField(max_length=15)
 
 
 class Prospect(models.Model):
