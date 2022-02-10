@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
+from datetime import datetime
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -111,6 +113,18 @@ class SpecificSalesEmployee(APIView):
         serializer = SalesEmployeeSerializer(sales_employee)
         return Response(serializer.data)
 
+    def put(self, request, sales_employee_id, *args, **kwargs):
+        sales_employee_data = request.data
+        sales_employee = SalesEmployee.objects.get(user=sales_employee_id)
+        if sales_employee_data["phone"] != "":
+            sales_employee.phone = sales_employee_data["phone"]
+        if sales_employee_data["prospect_id"] != "":
+            prospect = Prospect.objects.get(id=sales_employee_data["prospect_id"])
+            sales_employee.prospects.add(prospect)
+        sales_employee.save()
+        serializer = SalesEmployeeSerializer(sales_employee)
+        return Response(serializer.data)
+
 
 class SupportEmployeeAPIView(APIView):
     """
@@ -160,6 +174,19 @@ class SpecificSupportEmployee(APIView):
         serializer = SupportEmployeeSerializer(support_employee)
         return Response(serializer.data)
 
+    def put(self, request, support_employee_id, *args, **kwargs):
+        support_employee_data = request.data
+        support_employee = SupportEmployee.objects.get(user=support_employee_id)
+
+        if support_employee_data["phone"] != "":
+            support_employee.phone = support_employee_data["phone"]
+        if support_employee_data["event_id"] != "":
+            event = Event.objects.get(id=support_employee_data["event_id"])
+            support_employee.events.add(event)
+        support_employee.save()
+        serializer = SupportEmployeeSerializer(support_employee)
+        return Response(serializer.data)
+
 
 class ClientAPIView(APIView):
     """
@@ -201,6 +228,28 @@ class SpecificClient(APIView):
 
     def get(self, request, client_id, *args, **kwargs):
         client = Client.objects.get(user=client_id)
+        serializer = ClientSerializer(client)
+        return Response(serializer.data)
+
+    def put(self, request, client_id, *args, **kwargs):
+        client_data = request.data
+        client = Client.objects.get(user=client_id)
+
+        if client_data["first_name"] != "":
+            client.first_name = client_data["first_name"]
+        if client_data["last_name"] != "":
+            client.last_name = client_data["last_name"]
+        if client_data["email"] != "":
+            client.email = client_data["email"]
+        if client_data["phone"] != "":
+            client.phone = client_data["phone"]
+        if client_data["company_name"] != "":
+            client.company_name = client_data["company_name"]
+        if client_data["sales_contact_id"] != "":
+            sales_contact = SalesEmployee.objects.get(id=client_data["sales_contact_id"])
+            client.sales_contact = sales_contact
+        client.date_updated = datetime.now()
+        client.save()
         serializer = ClientSerializer(client)
         return Response(serializer.data)
 
@@ -247,6 +296,15 @@ class SpecificContract(APIView):
         serializer = ContractSerializer(contract)
         return Response(serializer.data)
 
+    def put(self, request, contract_id, *args, **kwargs):
+        contract_data = request.data
+        contract = Contract.objects.get(user=contract_id)
+        if contract_data["price"] != "":
+            contract.price = contract_data["price"]
+        contract.save()
+        serializer = ContractSerializer(contract)
+        return Response(serializer.data)
+
 
 class EventAPIView(APIView):
     """
@@ -287,5 +345,21 @@ class SpecificEvent(APIView):
 
     def get(self, request, event_id, *args, **kwargs):
         event = Event.objects.get(user=event_id)
+        serializer = EventSerializer(event)
+        return Response(serializer.data)
+
+    def put(self, request, event_id, *args, **kwargs):
+        event_data = request.data
+        event = Client.objects.get(user=event_id)
+
+        if event_data["date_start"] != "":
+            event.date_start = event_data["date_start"]
+        if event_data["date_end"] != "":
+            event.date_end = event_data["date_end"]
+        if event_data["location"] != "":
+            event.location = event_data["location"]
+        if event_data["comments"] != "":
+            event.comments = event_data["comments"]
+        event.save()
         serializer = EventSerializer(event)
         return Response(serializer.data)
