@@ -12,7 +12,9 @@ from .views import (ManagerAPIView,
                     SpecificSupportEmployee,
                     SpecificClient,
                     SpecificContract,
-                    SpecificEvent,)
+                    SpecificEvent,
+
+                    EventClient,)
 
 urlpatterns = [
     path('manager/', ManagerAPIView.as_view()),
@@ -28,4 +30,6 @@ urlpatterns = [
     path('client/<int:client_id>/', SpecificClient.as_view()),
     path('contract/<int:contract_id>/', SpecificContract.as_view()),
     path('event/<int:event_id>/', SpecificEvent.as_view()),
+
+    path('event/<int:event_id>/client/', EventClient.as_view()),
 ]

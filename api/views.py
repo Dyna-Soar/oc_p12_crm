@@ -363,3 +363,14 @@ class SpecificEvent(APIView):
         event.save()
         serializer = EventSerializer(event)
         return Response(serializer.data)
+
+
+class EventClient(APIView):
+    """
+    GET: read client data for an event it is client of
+    """
+    def get(self, request, event_id, *args, **kwargs):
+        event = Event.objects.get(user=event_id)
+        client = event.contract.client
+        serializer = ClientSerializer(client)
+        return Response(serializer.data)
