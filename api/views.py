@@ -105,6 +105,7 @@ class SpecificSalesEmployee(APIView):
     """
     GET: read details of a sales_employee
     PUT: update details of a sales_employee
+    DELETE: delete the sales employee
     """
     serializer_class = SalesEmployeeSerializer
 
@@ -124,6 +125,11 @@ class SpecificSalesEmployee(APIView):
         sales_employee.save()
         serializer = SalesEmployeeSerializer(sales_employee)
         return Response(serializer.data)
+
+    def delete(self, request, sales_employee_id, *args, **kwargs):
+        if SalesEmployee.objects.get(user=sales_employee_id).exists():
+            user = User.objects.get(user=sales_employee_id)
+            user.delete()
 
 
 class SupportEmployeeAPIView(APIView):
@@ -166,6 +172,7 @@ class SpecificSupportEmployee(APIView):
     """
     GET: read details of a support_employee
     PUT: update details of a support_employee
+    DELETE: delete the support employee
     """
     serializer_class = SupportEmployeeSerializer
 
@@ -186,6 +193,11 @@ class SpecificSupportEmployee(APIView):
         support_employee.save()
         serializer = SupportEmployeeSerializer(support_employee)
         return Response(serializer.data)
+
+    def delete(self, request, support_employee_id, *args, **kwargs):
+        if SupportEmployee.objects.get(user=support_employee_id).exists():
+            user = User.objects.get(user=support_employee_id)
+            user.delete()
 
 
 class ClientAPIView(APIView):
