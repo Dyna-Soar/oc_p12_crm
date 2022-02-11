@@ -48,7 +48,7 @@ class ClientSerializer(ModelSerializer):
 class ContractSerializer(ModelSerializer):
     class Meta:
         model = Contract
-        fields = ["id", "client", "event", "date_signed", "price"]
+        fields = ["id", "client", "event", "signed", "date_signed", "price"]
 
 
 class EventSerializer(ModelSerializer):

@@ -50,7 +50,8 @@ class Contract(models.Model):
     id = models.AutoField(primary_key=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     sales_employee = models.ForeignKey(SalesEmployee, on_delete=models.PROTECT)
-    date_signed = models.DateField()
+    date_signed = models.DateField(blank=True)
+    signed = models.BooleanField(default=False)
     price = models.IntegerField()
     pdf = models.FileField(upload_to='contracts_files/', blank=True)
 
