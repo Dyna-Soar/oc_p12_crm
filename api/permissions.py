@@ -26,6 +26,13 @@ class IsSupportEvent(permissions.BasePermission):
             return True
 
 
+class IsUserRequestingItsData(permissions.BasePermission):
+    def has_permission(self, request, view):
+        id = request.path.split("/")[2]
+        if request.user.id == id:
+            return True
+
+
 class PermissionManager(permissions.BasePermission):
     """
     GET: Only managers
