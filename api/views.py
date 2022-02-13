@@ -13,7 +13,7 @@ from .models import User, Manager, SalesEmployee, SupportEmployee, Prospect, Cli
 from .serializers import UserSerializer, ManagerSerializer, SalesEmployeeSerializer, SupportEmployeeSerializer, ProspectSerializer, ClientSerializer, ContractSerializer, EventSerializer
 
 # Custom permissions
-from .permissions import (IsGetOrIsAuthenticated)
+from .permissions import (IsManager, IsSales, IsSupport, IsSupportEvent, IsUserRequestingItsData)
 
 
 class ManagerAPIView(APIView):
@@ -22,6 +22,7 @@ class ManagerAPIView(APIView):
     POST: create a new manager
     """
     serializer_class = ManagerSerializer
+    permission_classes = [IsManager]
 
     def get(self, request, *args, **kwargs):
         managers = Manager.objects.all()
@@ -58,6 +59,7 @@ class SpecificManager(APIView):
     PUT: update details of a manager
     """
     serializer_class = ManagerSerializer
+    permission_classes = [IsManager]
 
     def get(self, request, manager_id, *args, **kwargs):
         manager = Manager.objects.get(user=manager_id)
@@ -71,6 +73,7 @@ class SalesEmployeeAPIView(APIView):
     POST: create a new sales employee
     """
     serializer_class = SalesEmployeeSerializer
+    permission_classes = [IsManager]
 
     def get(self, request, *args, **kwargs):
         sales_employees = SalesEmployee.objects.all()
@@ -109,6 +112,12 @@ class SpecificSalesEmployee(APIView):
     """
     serializer_class = SalesEmployeeSerializer
 
+    def get_permissions(self):
+        self.permission_classes = [IsManager]
+        if self.request.method == 'GET':
+            self.permission_classes.append(IsUserRequestingItsData)
+        return super().get_permissions()
+
     def get(self, request, sales_employee_id, *args, **kwargs):
         sales_employee = SalesEmployee.objects.get(user=sales_employee_id)
         serializer = SalesEmployeeSerializer(sales_employee)
@@ -130,6 +139,7 @@ class SpecificSalesEmployee(APIView):
         if SalesEmployee.objects.get(user=sales_employee_id).exists():
             user = User.objects.get(user=sales_employee_id)
             user.delete()
+            return Response(f'Sales Employee has been deleted')
 
 
 class SupportEmployeeAPIView(APIView):
@@ -138,6 +148,7 @@ class SupportEmployeeAPIView(APIView):
     POST: create a new support employee
     """
     serializer_class = SupportEmployeeSerializer
+    permission_classes = [IsManager]
 
     def get(self, request, *args, **kwargs):
         support_employees = SupportEmployee.objects.all()
@@ -176,6 +187,12 @@ class SpecificSupportEmployee(APIView):
     """
     serializer_class = SupportEmployeeSerializer
 
+    def get_permissions(self):
+        self.permission_classes = [IsManager]
+        if self.request.method == 'GET':
+            self.permission_classes.append(IsUserRequestingItsData)
+        return super().get_permissions()
+
     def get(self, request, support_employee_id, *args, **kwargs):
         support_employee = SupportEmployee.objects.get(user=support_employee_id)
         serializer = SupportEmployeeSerializer(support_employee)
@@ -198,6 +215,7 @@ class SpecificSupportEmployee(APIView):
         if SupportEmployee.objects.get(user=support_employee_id).exists():
             user = User.objects.get(user=support_employee_id)
             user.delete()
+            return Response(f'Support Employee has been deleted')
 
 
 class ClientAPIView(APIView):
@@ -205,6 +223,8 @@ class ClientAPIView(APIView):
     GET: read all clients
     POST: create a new client
     """
+    serializer_class = ClientSerializer
+    permission_classes = [IsManager | IsSales]
 
     def get(self, request, *args, **kwargs):
         clients = Client.objects.all()
@@ -237,6 +257,7 @@ class SpecificClient(APIView):
     PUT: update details of a client
     """
     serializer_class = ClientSerializer
+    permission_classes = [IsManager | IsSales]
 
     def get(self, request, client_id, *args, **kwargs):
         client = Client.objects.get(user=client_id)
@@ -271,6 +292,8 @@ class ContractAPIView(APIView):
     GET: read all contracts
     POST: create a new contract
     """
+    serializer_class = ContractSerializer
+    permission_classes = [IsManager | IsSales]
 
     def get(self, request, *args, **kwargs):
         contracts = Contract.objects.all()
@@ -302,6 +325,7 @@ class SpecificContract(APIView):
     PUT: update details of a contract
     """
     serializer_class = ContractSerializer
+    permission_classes = [IsManager | IsSales]
 
     def get(self, request, contract_id, *args, **kwargs):
         contract = Contract.objects.get(user=contract_id)
@@ -323,6 +347,8 @@ class EventAPIView(APIView):
     GET: read all events
     POST: create a new event
     """
+    serializer_class = EventSerializer
+    permission_classes = [IsManager | IsSales]
 
     def get(self, request, *args, **kwargs):
         events = Event.objects.all()
@@ -355,6 +381,15 @@ class SpecificEvent(APIView):
     """
     serializer_class = EventSerializer
 
+    def get_permissions(self):
+        self.permission_classes = [IsManager]
+        if self.request.method == 'GET':
+            self.permission_classes.append(IsSales)
+            self.permission_classes.append(IsSupportEvent)
+        elif self.request.method == 'PUT':
+            self.permission_classes.append(IsSupportEvent)
+        return super().get_permissions()
+
     def get(self, request, event_id, *args, **kwargs):
         event = Event.objects.get(user=event_id)
         serializer = EventSerializer(event)
@@ -381,6 +416,9 @@ class EventClient(APIView):
     """
     GET: read client data for an event it is client of
     """
+    serializer_class = ClientSerializer
+    permission_classes = [IsManager | IsSupportEvent]
+
     def get(self, request, event_id, *args, **kwargs):
         event = Event.objects.get(user=event_id)
         client = event.contract.client
