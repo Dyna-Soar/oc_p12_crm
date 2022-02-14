@@ -5,24 +5,24 @@ from .models import User, Manager, SalesEmployee, SupportEmployee, Prospect, Cli
 
 class IsManager(permissions.BasePermission):
     def has_permission(self, request, view):
-        return Manager.objects.filter(user=request.user).exists()
+        return Manager.objects.filter(user=request.user.id).exists()
 
 
 class IsSales(permissions.BasePermission):
     def has_permission(self, request, view):
-        return SalesEmployee.objects.filter(user=request.user).exists()
+        return SalesEmployee.objects.filter(user=request.user.id).exists()
 
 
 class IsSupport(permissions.BasePermission):
     def has_permission(self, request, view):
-        return SupportEmployee.objects.filter(user=request.user).exists()
+        return SupportEmployee.objects.filter(user=request.user.id).exists()
 
 
 class IsSupportEvent(permissions.BasePermission):
     def has_permission(self, request, view):
         event_id = request.path.split("/")[2]
         event = Event.objects.get(id=event_id)
-        if event in SupportEmployee.objects.get(user=request.user).events:
+        if event in SupportEmployee.objects.get(user=request.user.id).events:
             return True
 
 
