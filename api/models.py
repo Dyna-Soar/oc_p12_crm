@@ -42,7 +42,7 @@ class Client(models.Model):
     phone = models.CharField(max_length=15)
     company_name = models.CharField(max_length=50)
     date_created = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(blank=True)
+    date_updated = models.DateTimeField(auto_now_add=True)
     sales_contact = models.ForeignKey(SalesEmployee, on_delete=models.PROTECT)
 
 
