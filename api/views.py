@@ -228,14 +228,16 @@ class ClientAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         clients = Client.objects.all()
-        serializer = ClientSerializer(clients)
+        serializer = ClientSerializer(clients, many=True)
         return Response(serializer.data)
 
 
     def post(self, request, *args, **kwargs):
         client_data = request.data
 
-        sales_contact = SalesEmployee.objects.get(email=client_data["sales_contact_email"])
+        #sales_contact = SalesEmployee.objects.get(email=client_data["sales_contact_email"])
+
+        sales_contact = SalesEmployee.objects.get(user_id=client_data["sales_contact_id"])
 
         new_client = Client.objects.create(
             first_name=client_data["first_name"],
@@ -260,13 +262,13 @@ class SpecificClient(APIView):
     permission_classes = [IsManager | IsSales]
 
     def get(self, request, client_id, *args, **kwargs):
-        client = Client.objects.get(user=client_id)
+        client = Client.objects.get(id=client_id)
         serializer = ClientSerializer(client)
         return Response(serializer.data)
 
     def put(self, request, client_id, *args, **kwargs):
         client_data = request.data
-        client = Client.objects.get(user=client_id)
+        client = Client.objects.get(id=client_id)
 
         if client_data["first_name"] != "":
             client.first_name = client_data["first_name"]
@@ -297,15 +299,15 @@ class ContractAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         contracts = Contract.objects.all()
-        serializer = ContractSerializer(contracts)
+        serializer = ContractSerializer(contracts, many=True)
         return Response(serializer.data)
 
 
     def post(self, request, *args, **kwargs):
         contract_data = request.data
 
-        client = Client.objects.get(email=contract_data["client_email"])
-        sales_employee = SalesEmployee.objects.get(email=contract_data["sales_email"])
+        client = Client.objects.get(id=contract_data["client_id"])
+        sales_employee = SalesEmployee.objects.get(user_id=contract_data["sales_id"])
 
         new_contract = Contract.objects.create(
             client=client,
@@ -328,15 +330,17 @@ class SpecificContract(APIView):
     permission_classes = [IsManager | IsSales]
 
     def get(self, request, contract_id, *args, **kwargs):
-        contract = Contract.objects.get(user=contract_id)
+        contract = Contract.objects.get(id=contract_id)
         serializer = ContractSerializer(contract)
         return Response(serializer.data)
 
     def put(self, request, contract_id, *args, **kwargs):
         contract_data = request.data
-        contract = Contract.objects.get(user=contract_id)
+        contract = Contract.objects.get(id=contract_id)
         if contract_data["price"] != "":
             contract.price = contract_data["price"]
+        if contract_data["signed"] != "":
+            contract.signed = contract_data["signed"]
         contract.save()
         serializer = ContractSerializer(contract)
         return Response(serializer.data)
@@ -352,9 +356,8 @@ class EventAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         events = Event.objects.all()
-        serializer = EventSerializer(events)
+        serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
-
 
     def post(self, request, *args, **kwargs):
         event_data = request.data
@@ -391,13 +394,13 @@ class SpecificEvent(APIView):
         return super().get_permissions()
 
     def get(self, request, event_id, *args, **kwargs):
-        event = Event.objects.get(user=event_id)
+        event = Event.objects.get(id=event_id)
         serializer = EventSerializer(event)
         return Response(serializer.data)
 
     def put(self, request, event_id, *args, **kwargs):
         event_data = request.data
-        event = Client.objects.get(user=event_id)
+        event = Client.objects.get(id=event_id)
 
         if event_data["date_start"] != "":
             event.date_start = event_data["date_start"]
@@ -420,7 +423,7 @@ class EventClient(APIView):
     permission_classes = [IsManager | IsSupportEvent]
 
     def get(self, request, event_id, *args, **kwargs):
-        event = Event.objects.get(user=event_id)
+        event = Event.objects.get(id=event_id)
         client = event.contract.client
         serializer = ClientSerializer(client)
         return Response(serializer.data)
