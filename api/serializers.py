@@ -42,16 +42,16 @@ class ProspectSerializer(ModelSerializer):
 class ClientSerializer(ModelSerializer):
     class Meta:
         model = Client
-        fields = ["id", "first_name", "last_name", "email", "phone", "company_name", "sales_contact"]
+        fields = ["id", "first_name", "last_name", "email", "phone", "company_name", "sales_contact", "date_created", "date_updated"]
 
 
 class ContractSerializer(ModelSerializer):
     class Meta:
         model = Contract
-        fields = ["id", "client", "event", "signed", "date_signed", "price"]
+        fields = ["id", "client", "signed", "date_signed", "price"]
 
 
 class EventSerializer(ModelSerializer):
     class Meta:
         model = Event
-        fields = ["id", "date_start", "date_end", "location", "comment"]
+        fields = ["id", "date_start", "date_end", "location", "comments"]
