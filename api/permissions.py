@@ -20,10 +20,14 @@ class IsSupport(permissions.BasePermission):
 
 class IsSupportEvent(permissions.BasePermission):
     def has_permission(self, request, view):
-        event_id = request.path.split("/")[2]
+        event_id = request.path.split("/")[3]
+        print(request.path)
         event = Event.objects.get(id=event_id)
-        if event in SupportEmployee.objects.get(user=request.user.id).events:
-            return True
+        try:
+            if event in SupportEmployee.objects.filter(user=request.user.id).events:
+                return True
+        except AttributeError:
+            pass
 
 
 class IsUserRequestingItsData(permissions.BasePermission):
