@@ -1,18 +1,10 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-
 from datetime import datetime
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
-from rest_framework.permissions import IsAuthenticated
 
 from .models import User, Manager, SalesEmployee, SupportEmployee, Prospect, Client, Contract, Event
 from .serializers import UserSerializer, ManagerSerializer, SalesEmployeeSerializer, SupportEmployeeSerializer, ProspectSerializer, ClientSerializer, ContractSerializer, EventSerializer
-
-# Custom permissions
 from .permissions import (IsManager, IsSales, IsSupport, IsSupportEvent, IsUserRequestingItsData)
 
 
@@ -113,10 +105,13 @@ class SpecificSalesEmployee(APIView):
     serializer_class = SalesEmployeeSerializer
 
     def get_permissions(self):
-        self.permission_classes = [IsManager]
         if self.request.method == 'GET':
-            self.permission_classes.append(IsUserRequestingItsData)
-        return super().get_permissions()
+            self.permission_classes = [IsManager | IsUserRequestingItsData]
+        elif self.request.method == 'PUT':
+            self.permission_classes = [IsManager]
+        elif self.request.method == 'DELETE':
+            self.permission_classes = [IsManager]
+        return [permission() for permission in self.permission_classes]
 
     def get(self, request, sales_employee_id, *args, **kwargs):
         sales_employee = SalesEmployee.objects.get(user=sales_employee_id)
@@ -188,10 +183,13 @@ class SpecificSupportEmployee(APIView):
     serializer_class = SupportEmployeeSerializer
 
     def get_permissions(self):
-        self.permission_classes = [IsManager]
         if self.request.method == 'GET':
-            self.permission_classes.append(IsUserRequestingItsData)
-        return super().get_permissions()
+            self.permission_classes = [IsManager | IsUserRequestingItsData]
+        elif self.request.method == 'PUT':
+            self.permission_classes = [IsManager]
+        elif self.request.method == 'DELETE':
+            self.permission_classes = [IsManager]
+        return [permission() for permission in self.permission_classes]
 
     def get(self, request, support_employee_id, *args, **kwargs):
         support_employee = SupportEmployee.objects.get(user=support_employee_id)
@@ -385,13 +383,13 @@ class SpecificEvent(APIView):
     serializer_class = EventSerializer
 
     def get_permissions(self):
-        self.permission_classes = [IsManager]
         if self.request.method == 'GET':
-            self.permission_classes.append(IsSales)
-            self.permission_classes.append(IsSupportEvent)
+            self.permission_classes = [IsManager | IsSales | IsSupportEvent]
         elif self.request.method == 'PUT':
-            self.permission_classes.append(IsSupportEvent)
-        return super().get_permissions()
+            self.permission_classes = [IsManager | IsSupportEvent]
+        elif self.request.method == 'DELETE':
+            self.permission_classes = [IsManager]
+        return [permission() for permission in self.permission_classes]
 
     def get(self, request, event_id, *args, **kwargs):
         event = Event.objects.get(id=event_id)
@@ -400,7 +398,7 @@ class SpecificEvent(APIView):
 
     def put(self, request, event_id, *args, **kwargs):
         event_data = request.data
-        event = Client.objects.get(id=event_id)
+        event = Event.objects.get(id=event_id)
 
         if event_data["date_start"] != "":
             event.date_start = event_data["date_start"]
