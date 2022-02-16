@@ -30,7 +30,7 @@ class SupportEmployeeSerializer(ModelSerializer):
 
     class Meta:
         model = SupportEmployee
-        fields = ["user", "phone"]
+        fields = ["user", "phone", "events"]
 
 
 class ProspectSerializer(ModelSerializer):
