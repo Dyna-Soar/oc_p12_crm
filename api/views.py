@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from django.http import HttpResponse
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -54,9 +56,12 @@ class SpecificManager(APIView):
     permission_classes = [IsManager]
 
     def get(self, request, manager_id, *args, **kwargs):
-        manager = Manager.objects.get(user=manager_id)
-        serializer = ManagerSerializer(manager)
-        return Response(serializer.data)
+        try:
+            manager = Manager.objects.get(user=manager_id)
+            serializer = ManagerSerializer(manager)
+            return Response(serializer.data)
+        except Manager.DoesNotExist:
+            return HttpResponse("Manager does not exist", status=404)
 
 
 class SalesEmployeeAPIView(APIView):
@@ -114,27 +119,35 @@ class SpecificSalesEmployee(APIView):
         return [permission() for permission in self.permission_classes]
 
     def get(self, request, sales_employee_id, *args, **kwargs):
-        sales_employee = SalesEmployee.objects.get(user=sales_employee_id)
-        serializer = SalesEmployeeSerializer(sales_employee)
-        return Response(serializer.data)
+        try:
+            sales_employee = SalesEmployee.objects.get(user=sales_employee_id)
+            serializer = SalesEmployeeSerializer(sales_employee)
+            return Response(serializer.data)
+        except SalesEmployee.DoesNotExist:
+            return HttpResponse("Sales employee does not exist", status=404)
 
     def put(self, request, sales_employee_id, *args, **kwargs):
-        sales_employee_data = request.data
-        sales_employee = SalesEmployee.objects.get(user=sales_employee_id)
-        if sales_employee_data["phone"] != "":
-            sales_employee.phone = sales_employee_data["phone"]
-        if sales_employee_data["prospect_id"] != "":
-            prospect = Prospect.objects.get(id=sales_employee_data["prospect_id"])
-            sales_employee.prospects.add(prospect)
-        sales_employee.save()
-        serializer = SalesEmployeeSerializer(sales_employee)
-        return Response(serializer.data)
+        try:
+            sales_employee_data = request.data
+            sales_employee = SalesEmployee.objects.get(user=sales_employee_id)
+            if sales_employee_data["phone"] != "":
+                sales_employee.phone = sales_employee_data["phone"]
+            if sales_employee_data["prospect_id"] != "":
+                prospect = Prospect.objects.get(id=sales_employee_data["prospect_id"])
+                sales_employee.prospects.add(prospect)
+            sales_employee.save()
+            serializer = SalesEmployeeSerializer(sales_employee)
+            return Response(serializer.data)
+        except SalesEmployee.DoesNotExist:
+            return HttpResponse("Sales employee does not exist", status=404)
 
     def delete(self, request, sales_employee_id, *args, **kwargs):
-        if SalesEmployee.objects.get(user=sales_employee_id).exists():
+        try:
             user = User.objects.get(user=sales_employee_id)
             user.delete()
             return Response(f'Sales Employee has been deleted')
+        except SalesEmployee.DoesNotExist:
+            return HttpResponse("Sales employee does not exist", status=404)
 
 
 class SupportEmployeeAPIView(APIView):
@@ -192,28 +205,36 @@ class SpecificSupportEmployee(APIView):
         return [permission() for permission in self.permission_classes]
 
     def get(self, request, support_employee_id, *args, **kwargs):
-        support_employee = SupportEmployee.objects.get(user=support_employee_id)
-        serializer = SupportEmployeeSerializer(support_employee)
-        return Response(serializer.data)
+        try:
+            support_employee = SupportEmployee.objects.get(user=support_employee_id)
+            serializer = SupportEmployeeSerializer(support_employee)
+            return Response(serializer.data)
+        except SupportEmployee.DoesNotExist:
+            return HttpResponse("Support employee does not exist", status=404)
 
     def put(self, request, support_employee_id, *args, **kwargs):
-        support_employee_data = request.data
-        support_employee = SupportEmployee.objects.get(user=support_employee_id)
+        try:
+            support_employee_data = request.data
+            support_employee = SupportEmployee.objects.get(user=support_employee_id)
 
-        if support_employee_data["phone"] != "":
-            support_employee.phone = support_employee_data["phone"]
-        if support_employee_data["event_id"] != "":
-            event = Event.objects.get(id=support_employee_data["event_id"])
-            support_employee.events.add(event)
-        support_employee.save()
-        serializer = SupportEmployeeSerializer(support_employee)
-        return Response(serializer.data)
+            if support_employee_data["phone"] != "":
+                support_employee.phone = support_employee_data["phone"]
+            if support_employee_data["event_id"] != "":
+                event = Event.objects.get(id=support_employee_data["event_id"])
+                support_employee.events.add(event)
+            support_employee.save()
+            serializer = SupportEmployeeSerializer(support_employee)
+            return Response(serializer.data)
+        except SupportEmployee.DoesNotExist:
+            return HttpResponse("Support employee does not exist", status=404)
 
     def delete(self, request, support_employee_id, *args, **kwargs):
-        if SupportEmployee.objects.get(user=support_employee_id).exists():
+        try:
             user = User.objects.get(user=support_employee_id)
             user.delete()
             return Response(f'Support Employee has been deleted')
+        except SupportEmployee.DoesNotExist:
+            return HttpResponse("Support employee does not exist", status=404)
 
 
 class ClientAPIView(APIView):
@@ -232,8 +253,6 @@ class ClientAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         client_data = request.data
-
-        #sales_contact = SalesEmployee.objects.get(email=client_data["sales_contact_email"])
 
         sales_contact = SalesEmployee.objects.get(user_id=client_data["sales_contact_id"])
 
@@ -260,31 +279,38 @@ class SpecificClient(APIView):
     permission_classes = [IsManager | IsSales]
 
     def get(self, request, client_id, *args, **kwargs):
-        client = Client.objects.get(id=client_id)
-        serializer = ClientSerializer(client)
-        return Response(serializer.data)
+        try:
+            client = Client.objects.get(id=client_id)
+            serializer = ClientSerializer(client)
+            return Response(serializer.data)
+        except Client.DoesNotExist:
+            return HttpResponse("Client does not exist", status=404)
 
     def put(self, request, client_id, *args, **kwargs):
-        client_data = request.data
-        client = Client.objects.get(id=client_id)
+        try:
+            client_data = request.data
+            client = Client.objects.get(id=client_id)
 
-        if client_data["first_name"] != "":
-            client.first_name = client_data["first_name"]
-        if client_data["last_name"] != "":
-            client.last_name = client_data["last_name"]
-        if client_data["email"] != "":
-            client.email = client_data["email"]
-        if client_data["phone"] != "":
-            client.phone = client_data["phone"]
-        if client_data["company_name"] != "":
-            client.company_name = client_data["company_name"]
-        if client_data["sales_contact_id"] != "":
-            sales_contact = SalesEmployee.objects.get(id=client_data["sales_contact_id"])
-            client.sales_contact = sales_contact
-        client.date_updated = datetime.now()
-        client.save()
-        serializer = ClientSerializer(client)
-        return Response(serializer.data)
+            if client_data["first_name"] != "":
+                client.first_name = client_data["first_name"]
+            if client_data["last_name"] != "":
+                client.last_name = client_data["last_name"]
+            if client_data["email"] != "":
+                client.email = client_data["email"]
+            if client_data["phone"] != "":
+                client.phone = client_data["phone"]
+            if client_data["company_name"] != "":
+                client.company_name = client_data["company_name"]
+            if client_data["sales_contact_id"] != "":
+                sales_contact = SalesEmployee.objects.get(id=client_data["sales_contact_id"])
+                client.sales_contact = sales_contact
+            client.date_updated = datetime.now()
+            client.save()
+            serializer = ClientSerializer(client)
+            return Response(serializer.data)
+
+        except Client.DoesNotExist:
+            return HttpResponse("Client does not exist", status=404)
 
 
 class ContractAPIView(APIView):
@@ -328,20 +354,26 @@ class SpecificContract(APIView):
     permission_classes = [IsManager | IsSales]
 
     def get(self, request, contract_id, *args, **kwargs):
-        contract = Contract.objects.get(id=contract_id)
-        serializer = ContractSerializer(contract)
-        return Response(serializer.data)
+        try:
+            contract = Contract.objects.get(id=contract_id)
+            serializer = ContractSerializer(contract)
+            return Response(serializer.data)
+        except Contract.DoesNotExist:
+            return HttpResponse("Contract does not exist", status=404)
 
     def put(self, request, contract_id, *args, **kwargs):
-        contract_data = request.data
-        contract = Contract.objects.get(id=contract_id)
-        if contract_data["price"] != "":
-            contract.price = contract_data["price"]
-        if contract_data["signed"] != "":
-            contract.signed = contract_data["signed"]
-        contract.save()
-        serializer = ContractSerializer(contract)
-        return Response(serializer.data)
+        try:
+            contract_data = request.data
+            contract = Contract.objects.get(id=contract_id)
+            if contract_data["price"] != "":
+                contract.price = contract_data["price"]
+            if contract_data["signed"] != "":
+                contract.signed = contract_data["signed"]
+            contract.save()
+            serializer = ContractSerializer(contract)
+            return Response(serializer.data)
+        except Contract.DoesNotExist:
+            return HttpResponse("Contract does not exist", status=404)
 
 
 class EventAPIView(APIView):
@@ -392,25 +424,32 @@ class SpecificEvent(APIView):
         return [permission() for permission in self.permission_classes]
 
     def get(self, request, event_id, *args, **kwargs):
-        event = Event.objects.get(id=event_id)
-        serializer = EventSerializer(event)
-        return Response(serializer.data)
+        try:
+            event = Event.objects.get(id=event_id)
+            serializer = EventSerializer(event)
+            return Response(serializer.data)
+        except Event.DoesNotExist:
+            return HttpResponse("Event does not exist", status=404)
 
     def put(self, request, event_id, *args, **kwargs):
-        event_data = request.data
-        event = Event.objects.get(id=event_id)
+        try:
+            event_data = request.data
+            event = Event.objects.get(id=event_id)
 
-        if event_data["date_start"] != "":
-            event.date_start = event_data["date_start"]
-        if event_data["date_end"] != "":
-            event.date_end = event_data["date_end"]
-        if event_data["location"] != "":
-            event.location = event_data["location"]
-        if event_data["comments"] != "":
-            event.comments = event_data["comments"]
-        event.save()
-        serializer = EventSerializer(event)
-        return Response(serializer.data)
+            if event_data["date_start"] != "":
+                event.date_start = event_data["date_start"]
+            if event_data["date_end"] != "":
+                event.date_end = event_data["date_end"]
+            if event_data["location"] != "":
+                event.location = event_data["location"]
+            if event_data["comments"] != "":
+                event.comments = event_data["comments"]
+            event.save()
+            serializer = EventSerializer(event)
+            return Response(serializer.data)
+
+        except Event.DoesNotExist:
+            return HttpResponse("Event does not exist", status=404)
 
 
 class EventClient(APIView):
@@ -421,7 +460,10 @@ class EventClient(APIView):
     permission_classes = [IsManager | IsSupportEvent]
 
     def get(self, request, event_id, *args, **kwargs):
-        event = Event.objects.get(id=event_id)
-        client = event.contract.client
-        serializer = ClientSerializer(client)
-        return Response(serializer.data)
+        try:
+            event = Event.objects.get(id=event_id)
+            client = event.contract.client
+            serializer = ClientSerializer(client)
+            return Response(serializer.data)
+        except Event.DoesNotExist:
+            return HttpResponse("Event does not exist", status=404)
